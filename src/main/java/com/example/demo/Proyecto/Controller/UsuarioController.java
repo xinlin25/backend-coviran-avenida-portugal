@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Proyecto.DTO.ActualizarPerfilDTO;
+import com.example.demo.Proyecto.DTO.ActualizarUsuarioDTO;
 import com.example.demo.Proyecto.DTO.UsuarioPerfilDTO;
 import com.example.demo.Proyecto.Enum.Rol;
 import com.example.demo.Proyecto.Model.Usuario;
@@ -60,18 +61,18 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Usuario> actualizarUsuario(
         @PathVariable Long id,
-        @RequestBody Usuario actualizado
+        @RequestBody ActualizarUsuarioDTO actualizado
     ) {
         Usuario usuario = usuarioService.buscarPorId(id)
             .orElseThrow();
 
-        usuario.setNombreCompleto(actualizado.getNombreCompleto());
-        usuario.setTlf(actualizado.getTlf());
-        usuario.setDireccion(actualizado.getDireccion());
-        usuario.setRol(actualizado.getRol());
-        usuario.setEnabled(actualizado.isEnabled());
+        usuario.setNombreCompleto(actualizado.nombreCompleto());
+        usuario.setTlf(actualizado.tlf());
+        usuario.setDireccion(actualizado.direccion());
+        usuario.setRol(actualizado.rol());
+        usuario.setEnabled(actualizado.enabled());
 
-        return ResponseEntity.ok(usuarioService.actualizarUsuario(usuario));
+        return ResponseEntity.ok(usuarioService.actualizarUsuario(id, actualizado));
     }
 
     @GetMapping

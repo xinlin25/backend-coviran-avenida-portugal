@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Proyecto.DTO.ActualizarPerfilDTO;
+import com.example.demo.Proyecto.DTO.ActualizarUsuarioDTO;
 import com.example.demo.Proyecto.Enum.Rol;
 import com.example.demo.Proyecto.Model.Usuario;
 import com.example.demo.Proyecto.Repository.UsuarioRepository;
@@ -70,15 +71,15 @@ public class UsuarioService {
     }
 
     @Transactional
-    public Usuario actualizarUsuario(Usuario u) {
-        Usuario usuario = usuarioRepository.findById(u.getId())
+    public Usuario actualizarUsuario(Long id, ActualizarUsuarioDTO u) {
+        Usuario usuario = usuarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        usuario.setNombreCompleto(u.getNombreCompleto());
-        usuario.setTlf(u.getTlf());
-        usuario.setDireccion(u.getDireccion());
-        usuario.setRol(u.getRol());
-        usuario.setEnabled(u.isEnabled());
+        usuario.setNombreCompleto(u.nombreCompleto());
+        usuario.setTlf(u.tlf());
+        usuario.setDireccion(u.direccion());
+        usuario.setRol(u.rol());
+        usuario.setEnabled(u.enabled());
 
         return usuarioRepository.save(usuario);
     }
