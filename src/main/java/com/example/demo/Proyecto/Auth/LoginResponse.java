@@ -1,13 +1,20 @@
 package com.example.demo.Proyecto.Auth;
 
 public class LoginResponse {
-    private String token;
 
-    public LoginResponse (String token) {
-        this.token = token;
+    private String accessToken;
+    private String refreshToken;
+
+    public LoginResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
-    public String getToken() {
-        return token;
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }
