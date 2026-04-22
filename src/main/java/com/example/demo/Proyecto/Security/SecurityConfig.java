@@ -22,7 +22,6 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final RateLimitFilter rateLimitFilter; 
 

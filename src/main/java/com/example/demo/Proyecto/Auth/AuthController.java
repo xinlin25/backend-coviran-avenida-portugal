@@ -45,7 +45,7 @@ public class AuthController {
         String accessToken = jwtUtils.generarToken(usuario);
 
         //Borrar refresh token anterior (si existe)
-        refreshTokenService.deleteByUsuarioId(usuario.getId());
+        //refreshTokenService.deleteByUsuarioId(usuario.getId());
 
         //Crear nuevo refresh token
         RefreshToken refreshToken = refreshTokenService.crearRefreshToken(usuario.getId());
