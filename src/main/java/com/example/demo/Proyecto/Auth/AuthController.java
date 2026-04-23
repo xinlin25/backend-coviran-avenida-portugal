@@ -20,13 +20,11 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final RefreshTokenService refreshTokenService;
 
-    public AuthController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, RefreshTokenService refreshTokenService) {
+    public AuthController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.usuarioService = usuarioService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
-        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/login")
@@ -41,19 +39,9 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");
         }
 
-        //Generar access token (JWT)
-        String accessToken = jwtUtils.generarToken(usuario);
+        String token = jwtUtils.generarToken(usuario);
 
-        //Borrar refresh token anterior (si existe)
-        //refreshTokenService.deleteByUsuarioId(usuario.getId());
-
-        //Crear nuevo refresh token
-        RefreshToken refreshToken = refreshTokenService.crearRefreshToken(usuario.getId());
-
-        //Devolver ambos
-        return ResponseEntity.ok(
-            new LoginResponse(accessToken, refreshToken.getToken())
-        );
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 
     @PostMapping("/register")
@@ -64,26 +52,5 @@ public class AuthController {
 
         u.setRol(Rol.CLIENTE);
         return ResponseEntity.ok(usuarioService.guardarUsuario(u));
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        String requestToken = request.getRefreshToken();
-
-        return refreshTokenService.findByToken(requestToken)
-            .map(refreshTokenService::verificarExpiracion)
-            .map(rt -> {
-                Usuario usuario = rt.getUsuario();
-
-                // generar nuevo access token
-                String newAccessToken = jwtUtils.generarToken(usuario);
-
-                return ResponseEntity.ok(
-                    new LoginResponse(newAccessToken, requestToken)
-                );
-            })
-            .orElseThrow(() -> 
-                new RuntimeException("Refresh token no válido")
-            );
     }
 }
