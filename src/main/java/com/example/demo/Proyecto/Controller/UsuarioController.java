@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Proyecto.DTO.ActualizarPerfilDTO;
 import com.example.demo.Proyecto.DTO.ActualizarUsuarioDTO;
+import com.example.demo.Proyecto.DTO.CrearUsuarioDTO;
 import com.example.demo.Proyecto.DTO.UsuarioPerfilDTO;
 import com.example.demo.Proyecto.Enum.Rol;
 import com.example.demo.Proyecto.Model.Usuario;
@@ -45,7 +47,6 @@ public class UsuarioController {
         ));
     }
 
-
     @PutMapping("/mi-perfil")
     @PreAuthorize("hasAnyRole('CLIENTE','EMPLEADO','ADMIN')")
     public ResponseEntity<Usuario> actualizarPerfil(
@@ -74,6 +75,23 @@ public class UsuarioController {
 
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, actualizado));
     }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<Usuario> crearUsuario(@RequestBody CrearUsuarioDTO datos) {
+
+        Usuario usuario = new Usuario();
+        usuario.setNombreCompleto(datos.nombreCompleto());
+        usuario.setCorreo(datos.correo());
+        usuario.setPassword(datos.password());
+        usuario.setTlf(datos.tlf());
+        usuario.setDireccion(datos.direccion());
+        usuario.setRol(datos.rol());
+        usuario.setEnabled(datos.enabled());
+
+        return ResponseEntity.ok(usuarioService.guardarUsuario(usuario));
+    }
+
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
