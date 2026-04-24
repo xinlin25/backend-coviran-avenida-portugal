@@ -22,7 +22,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByRol(Rol rol);
 
-    // Consulta JPQL parametrizada (ejemplo explícito contra SQL Injection)
+    //Consulta JPQL parametrizada (ejemplo explícito contra SQL Injection)
     @Query("SELECT u FROM Usuario u WHERE u.correo = :correo")
     Optional<Usuario> buscarPorCorreoSeguro(@Param("correo") String correo);
+
+    //Busqueda personalizada con LIKE
+    @Query("""
+        SELECT u FROM Usuario u 
+        WHERE LOWER(u.nombreCompleto) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR LOWER(u.correo) LIKE LOWER(CONCAT('%', :query, '%'))
+        OR u.tlf LIKE CONCAT('%', :query, '%')
+    """)
+    List<Usuario> buscar(@Param("query") String query);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Proyecto.DTO.ActualizarPerfilDTO;
@@ -126,5 +127,11 @@ public class UsuarioController {
     public ResponseEntity<Void> desactivarUsuario(@PathVariable Long id) {
         usuarioService.desactivarUsuario(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<List<Usuario>> buscar(@RequestParam String query) {
+        return ResponseEntity.ok(usuarioService.buscar(query));
     }
 }

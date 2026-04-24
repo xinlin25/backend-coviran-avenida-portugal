@@ -102,4 +102,8 @@ public class UsuarioService {
     public void borrarPorId(Long id) {
         usuarioRepository.deleteById(id);
     }
+
+    public List<Usuario> buscar(String query) {
+        return usuarioRepository.buscar(query);
+    }
 }
