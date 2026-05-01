@@ -5,15 +5,19 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Model.Producto;
+import com.example.demo.Proyecto.Repository.CategoriaRepository;
 import com.example.demo.Proyecto.Repository.ProductoRepository;
 
 @Service
 public class ProductoService {
     private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProductoService(ProductoRepository productoRepository) {
+    public ProductoService(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
         this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     public Producto guardarProducto(Producto producto) {
@@ -51,4 +55,9 @@ public class ProductoService {
     public void borrarPorId(Long id) {
         productoRepository.deleteById(id);
     }
+
+    public Categoria obtenerCategoria(Long categoriaId) {
+    return categoriaRepository.findById(categoriaId)
+        .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+}
 }

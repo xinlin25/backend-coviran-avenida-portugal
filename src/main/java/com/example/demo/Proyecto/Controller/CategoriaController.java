@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Proyecto.DTO.CrearCategoriaDTO;
 import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Service.CategoriaService;
 
@@ -30,12 +31,22 @@ public class CategoriaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
-    public ResponseEntity<Categoria> crearCategoria(@RequestBody Categoria categoria) {
-        if (categoriaService.existePorNombre(categoria.getNombre())) 
+    public ResponseEntity<Categoria> crearCategoria(@RequestBody CrearCategoriaDTO datos) {
+
+        if (categoriaService.existePorNombre(datos.nombre())) 
             return ResponseEntity.badRequest().build();
 
-        Categoria c = categoriaService.guardarCategoria(categoria);
-        return ResponseEntity.ok(c);
+        Categoria categoria = new Categoria();
+        categoria.setNombre(datos.nombre());
+
+        if (datos.categoriaPadreId() != null) {
+            Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
+                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
+
+            categoria.setParent(padre);
+        }
+
+        return ResponseEntity.ok(categoriaService.guardarCategoria(categoria));
     }
 
     @GetMapping

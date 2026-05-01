@@ -32,6 +32,10 @@ public class CategoriaService {
         return categoriaRepository.findByNombreContainingIgnoreCase(nombre);
     }
 
+    public Optional<Categoria> buscarPorId(Long id) {
+        return categoriaRepository.findById(id);
+    }
+
     public boolean existePorNombre(String nombre) {
         return categoriaRepository.existsByNombre(nombre);
     }

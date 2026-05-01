@@ -50,4 +50,11 @@ public class Producto {
     @JoinColumn(name = "categoria_id", nullable = false)
     @JsonBackReference("categoria-producto")
     private Categoria categoria;
+
+    @Column(nullable = false)
+    @NotBlank
+    private String marca;
+
+    @Column(nullable = false)
+    private int stock;
 }

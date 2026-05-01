@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Proyecto.DTO.CrearProductoDTO;
 import com.example.demo.Proyecto.Model.Producto;
 import com.example.demo.Proyecto.Service.ProductoService;
 
@@ -30,13 +31,21 @@ public class ProductoController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
-    public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
-        if (productoService.existePorNombre(producto.getNombre())) 
-            return ResponseEntity.badRequest().build();
-        
-        Producto p = productoService.guardarProducto(producto);
+    public ResponseEntity<Producto> crearProducto(@RequestBody CrearProductoDTO datos) {
 
-        return ResponseEntity.ok(p);
+        if (productoService.existePorNombre(datos.nombre())) 
+            return ResponseEntity.badRequest().build();
+
+        Producto producto = new Producto();
+        producto.setNombre(datos.nombre());
+        producto.setPrecio(datos.precio());
+        producto.setDescripcion(datos.descripcion());
+        producto.setMarca(datos.marca());
+        producto.setStock(datos.stock());
+
+        producto.setCategoria(productoService.obtenerCategoria(datos.categoriaId()));
+
+        return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
 
     @GetMapping
