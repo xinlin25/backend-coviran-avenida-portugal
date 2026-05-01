@@ -61,21 +61,22 @@ public class ProductoController {
         return producto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/buscar")
-    public ResponseEntity<Producto> buscarPorNombre(@RequestParam String nombre) {
-        Optional<Producto> producto = productoService.buscarPorNombre(nombre);
-
-        return producto.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/buscar/{nombre}")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> buscarPorNombreParcial(@PathVariable String nombre) {
         return ResponseEntity.ok(productoService.buscarPorNombreParcial(nombre));
     }
 
     @GetMapping("/categoria/{categoriaId}")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable Long categoriaId) {
         return ResponseEntity.ok(productoService.buscarPorCategoria(categoriaId));
+    }
+
+    @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<List<Producto>> buscar(@RequestParam String query) {
+        return ResponseEntity.ok(productoService.buscar(query));
     }
 
     @GetMapping("/activos")

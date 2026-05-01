@@ -44,6 +44,10 @@ public class ProductoService {
         return productoRepository.findByCategoriaId(categoriaId);
     }
 
+    public List<Producto> buscar(String query) {
+        return productoRepository.buscar(query);
+    }
+
     public List<Producto> listarActivos() {
         return productoRepository.findByActivoTrue();
     }
