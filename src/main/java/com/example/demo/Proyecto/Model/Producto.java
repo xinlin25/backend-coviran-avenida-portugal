@@ -2,7 +2,7 @@ package com.example.demo.Proyecto.Model;
 
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,9 +46,9 @@ public class Producto {
     @Column(nullable = false)
     private boolean activo = true;
 
+    @JsonIgnoreProperties({"productos"})
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
-    @JsonBackReference("categoria-producto")
     private Categoria categoria;
 
     @Column(nullable = false)
