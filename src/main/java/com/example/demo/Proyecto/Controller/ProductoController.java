@@ -9,14 +9,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Proyecto.DTO.ActualizarProductoDTO;
 import com.example.demo.Proyecto.DTO.CrearProductoDTO;
+import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Model.Producto;
+import com.example.demo.Proyecto.Service.CategoriaService;
 import com.example.demo.Proyecto.Service.ProductoService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
@@ -24,9 +28,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/productos")
 public class ProductoController {
     private final ProductoService productoService;
+    private final CategoriaService categoriaService;
 
-    public ProductoController(ProductoService productoService) {
+    public ProductoController(ProductoService productoService, CategoriaService categoriaService) {
         this.productoService = productoService;
+        this.categoriaService = categoriaService;
     }
 
     @PostMapping
@@ -43,7 +49,7 @@ public class ProductoController {
         producto.setMarca(datos.marca());
         producto.setStock(datos.stock());
 
-        producto.setCategoria(productoService.obtenerCategoria(datos.categoriaId()));
+        producto.setCategoria(categoriaService.buscarPorId(datos.categoriaId()).orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
 
         return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
@@ -92,5 +98,29 @@ public class ProductoController {
         
         productoService.borrarPorId(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<Producto> actualizarProducto(
+        @PathVariable Long id,
+        @RequestBody ActualizarProductoDTO datos
+    ) {
+        Producto producto = productoService.buscarPorId(id).orElseThrow();
+
+        producto.setNombre(datos.nombre());
+        producto.setDescripcion(datos.descripcion());
+        producto.setPrecio(datos.precio());
+        producto.setMarca(datos.marca());
+        producto.setStock(datos.stock());
+
+        if (datos.categoriaId() != null) {
+            Categoria categoria = categoriaService.buscarPorId(datos.categoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+
+            producto.setCategoria(categoria);
+        }
+
+        return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
 }
