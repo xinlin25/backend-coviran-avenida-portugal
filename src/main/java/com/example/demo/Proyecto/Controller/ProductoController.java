@@ -123,4 +123,11 @@ public class ProductoController {
 
         return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
+
+    @PutMapping("/{id}/desactivar")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<Void> desactivarProducto(@PathVariable Long id) {
+        productoService.desactivarProducto(id);
+        return ResponseEntity.noContent().build();
+    }
 }

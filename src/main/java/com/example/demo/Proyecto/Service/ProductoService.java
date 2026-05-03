@@ -61,7 +61,15 @@ public class ProductoService {
     }
 
     public Categoria obtenerCategoria(Long categoriaId) {
-    return categoriaRepository.findById(categoriaId)
-        .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-}
+        return categoriaRepository.findById(categoriaId)
+            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+    }
+
+    public void desactivarProducto(Long id) {
+        Producto producto = productoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        producto.setActivo(false);
+        productoRepository.save(producto);
+    }
 }
