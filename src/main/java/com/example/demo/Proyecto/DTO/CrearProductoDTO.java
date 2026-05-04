@@ -8,5 +8,6 @@ public record CrearProductoDTO(
     String descripcion,
     String marca,
     int stock,
-    Long categoriaId
+    Long categoriaId,
+    Boolean activo
 ) {}

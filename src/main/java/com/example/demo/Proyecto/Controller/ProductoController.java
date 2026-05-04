@@ -51,6 +51,8 @@ public class ProductoController {
 
         producto.setCategoria(categoriaService.buscarPorId(datos.categoriaId()).orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
 
+        producto.setActivo(datos.activo() != null ? datos.activo() : true);
+
         return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
 
@@ -120,6 +122,8 @@ public class ProductoController {
 
             producto.setCategoria(categoria);
         }
+
+        if (datos.activo() != null) producto.setActivo(datos.activo());
 
         return ResponseEntity.ok(productoService.guardarProducto(producto));
     }

@@ -7,5 +7,6 @@ public record ActualizarProductoDTO(
     BigDecimal precio,
     String marca,
     Integer stock,
-    Long categoriaId
+    Long categoriaId,
+    Boolean activo
 ) {}
