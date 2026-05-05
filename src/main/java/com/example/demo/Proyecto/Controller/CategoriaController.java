@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.Proyecto.DTO.ActualizarCategoriaDTO;
 import com.example.demo.Proyecto.DTO.CrearCategoriaDTO;
 import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Service.CategoriaService;
@@ -33,8 +35,7 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Categoria> crearCategoria(@RequestBody CrearCategoriaDTO datos) {
 
-        if (categoriaService.existePorNombre(datos.nombre())) 
-            return ResponseEntity.badRequest().build();
+        if (categoriaService.existePorNombre(datos.nombre())) return ResponseEntity.badRequest().build();
 
         Categoria categoria = new Categoria();
         categoria.setNombre(datos.nombre());
@@ -44,6 +45,29 @@ public class CategoriaController {
                 .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
 
             categoria.setParent(padre);
+        }
+
+        return ResponseEntity.ok(categoriaService.guardarCategoria(categoria));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<Categoria> actualizarCategoria(
+        @PathVariable Long id,
+        @RequestBody ActualizarCategoriaDTO datos
+    ) {
+        Categoria categoria = categoriaService.buscarPorId(id)
+            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+
+        categoria.setNombre(datos.nombre());
+
+        if (datos.categoriaPadreId() != null) {
+            Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
+                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
+
+            categoria.setParent(padre);
+        } else {
+            categoria.setParent(null);
         }
 
         return ResponseEntity.ok(categoriaService.guardarCategoria(categoria));
