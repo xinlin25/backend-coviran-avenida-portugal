@@ -39,12 +39,10 @@ public class Categoria {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    //Evita bucle al serializar parent
-    @JsonBackReference("categoria-parent")
     private Categoria parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("categoria-parent")
+    @JsonIgnore
     private List<Categoria> hijos = new ArrayList<>();
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
