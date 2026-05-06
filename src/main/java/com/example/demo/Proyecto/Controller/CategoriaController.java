@@ -39,6 +39,7 @@ public class CategoriaController {
 
         Categoria categoria = new Categoria();
         categoria.setNombre(datos.nombre());
+        categoria.setActiva(datos.activa());
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
@@ -52,25 +53,28 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
-    public ResponseEntity<Categoria> actualizarCategoria(
+    public ResponseEntity<?> actualizarCategoria(
         @PathVariable Long id,
         @RequestBody ActualizarCategoriaDTO datos
     ) {
+
         Categoria categoria = categoriaService.buscarPorId(id)
-            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            .orElseThrow();
 
         categoria.setNombre(datos.nombre());
+        categoria.setActiva(datos.activa());
 
         if (datos.categoriaPadreId() != null) {
-            Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
-                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
-
+            Categoria padre = categoriaService
+                .buscarPorId(datos.categoriaPadreId())
+                .orElseThrow();
             categoria.setParent(padre);
-        } else {
+        } else 
             categoria.setParent(null);
-        }
 
-        return ResponseEntity.ok(categoriaService.guardarCategoria(categoria));
+        categoriaService.guardarCategoria(categoria);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
