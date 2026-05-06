@@ -39,6 +39,7 @@ public class CategoriaController {
 
         Categoria categoria = new Categoria();
         categoria.setNombre(datos.nombre());
+        categoria.setActivo(datos.activo() != null ? datos.activo() : true);
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
@@ -60,6 +61,8 @@ public class CategoriaController {
             .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
         categoria.setNombre(datos.nombre());
+        if (datos.activo() != null) categoria.setActivo(datos.activo());
+
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())

@@ -49,4 +49,7 @@ public class Categoria {
     //Serializa productos correctamente
     @JsonManagedReference("categoria-producto")
     private List<Producto> productos = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean activo = true;
 }
