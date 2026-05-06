@@ -53,7 +53,7 @@ public class CategoriaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
-    public ResponseEntity<?> actualizarCategoria(
+    public ResponseEntity<Categoria> actualizarCategoria(
         @PathVariable Long id,
         @RequestBody ActualizarCategoriaDTO datos
     ) {
@@ -74,7 +74,7 @@ public class CategoriaController {
 
         categoriaService.guardarCategoria(categoria);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(categoria);
     }
 
     @GetMapping
