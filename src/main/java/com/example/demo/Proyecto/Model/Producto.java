@@ -43,6 +43,17 @@ public class Producto {
     @Size(min = 2, max = 250)
     private String descripcion;
 
+    @Column(name = "imagen_url")
+    private String imagenUrl;
+
+    @Column(nullable = false)
+    private boolean enOferta = false;
+
+    @Column
+    @DecimalMin(value = "0.0", inclusive = false)
+    private BigDecimal precioOferta;
+
+    @NotNull
     @Column(nullable = false)
     private boolean activo = true;
 
