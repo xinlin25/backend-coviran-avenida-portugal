@@ -47,7 +47,7 @@ public class Categoria {
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     //Serializa productos correctamente
-    @JsonManagedReference("categoria-producto")
+    @JsonIgnore
     private List<Producto> productos = new ArrayList<>();
 
     @Column(nullable = false)
