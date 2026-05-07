@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.Proyecto.DTO.ActualizarProductoDTO;
-import com.example.demo.Proyecto.DTO.CrearProductoDTO;
 import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Model.Producto;
 import com.example.demo.Proyecto.Service.CategoriaService;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -133,26 +130,41 @@ public class ProductoController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Producto> actualizarProducto(
         @PathVariable Long id,
-        @RequestBody ActualizarProductoDTO datos
+        @RequestParam String nombre,
+        @RequestParam String descripcion,
+        @RequestParam BigDecimal precio,
+        @RequestParam String marca,
+        @RequestParam Integer stock,
+        @RequestParam Long categoriaId,
+        @RequestParam(required = false) Boolean activo,
+        @RequestParam(required = false) Boolean enOferta,
+        @RequestParam(required = false) BigDecimal precioOferta,
+        @RequestParam(required = false) MultipartFile imagen
     ) {
-        Producto producto = productoService.buscarPorId(id).orElseThrow();
-
-        producto.setNombre(datos.nombre());
-        producto.setDescripcion(datos.descripcion());
-        producto.setPrecio(datos.precio());
-        producto.setMarca(datos.marca());
-        producto.setStock(datos.stock());
-
-        if (datos.categoriaId() != null) {
-            Categoria categoria = categoriaService.buscarPorId(datos.categoriaId())
+        try {
+            Producto producto = productoService.buscarPorId(id).orElseThrow();
+            producto.setNombre(nombre);
+            producto.setDescripcion(descripcion);
+            producto.setPrecio(precio);
+            producto.setMarca(marca);
+            producto.setStock(stock);
+            producto.setActivo(activo != null ? activo : true);
+            producto.setEnOferta(enOferta != null ? enOferta : false);
+            producto.setPrecioOferta(precioOferta);
+            Categoria categoria = categoriaService.buscarPorId(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-
             producto.setCategoria(categoria);
+
+            if (imagen != null && !imagen.isEmpty()) {
+                String imageUrl = cloudinaryService.subirImagen(imagen);
+                producto.setImagenUrl(imageUrl);
+            }
+
+            return ResponseEntity.ok(productoService.guardarProducto(producto));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
-
-        if (datos.activo() != null) producto.setActivo(datos.activo());
-
-        return ResponseEntity.ok(productoService.guardarProducto(producto));
     }
 
     @PutMapping("/{id}/desactivar")
