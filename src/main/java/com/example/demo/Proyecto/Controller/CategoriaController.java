@@ -39,7 +39,7 @@ public class CategoriaController {
 
         Categoria categoria = new Categoria();
         categoria.setNombre(datos.nombre());
-        categoria.setActiva(datos.activa());
+        categoria.setActivo(datos.activo() != null ? datos.activo() : true);
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
@@ -62,7 +62,8 @@ public class CategoriaController {
             .orElseThrow();
 
         categoria.setNombre(datos.nombre());
-        categoria.setActiva(datos.activa());
+        if (datos.activo() != null) categoria.setActivo(datos.activo());
+
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService

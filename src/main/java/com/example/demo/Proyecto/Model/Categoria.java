@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -50,5 +49,5 @@ public class Categoria {
     private List<Producto> productos = new ArrayList<>();
 
     @Column(nullable = false)
-    private boolean activa = true;
+    private boolean activo = true;
 }
