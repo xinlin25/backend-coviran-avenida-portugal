@@ -57,23 +57,25 @@ public class CategoriaController {
         @PathVariable Long id,
         @RequestBody ActualizarCategoriaDTO datos
     ) {
+
         Categoria categoria = categoriaService.buscarPorId(id)
-            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            .orElseThrow();
 
         categoria.setNombre(datos.nombre());
         if (datos.activo() != null) categoria.setActivo(datos.activo());
 
 
         if (datos.categoriaPadreId() != null) {
-            Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
-                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
-
+            Categoria padre = categoriaService
+                .buscarPorId(datos.categoriaPadreId())
+                .orElseThrow();
             categoria.setParent(padre);
-        } else {
+        } else 
             categoria.setParent(null);
-        }
 
-        return ResponseEntity.ok(categoriaService.guardarCategoria(categoria));
+        categoriaService.guardarCategoria(categoria);
+
+        return ResponseEntity.ok(categoria);
     }
 
     @GetMapping

@@ -45,7 +45,6 @@ public class Categoria {
     private List<Categoria> hijos = new ArrayList<>();
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
-    //Serializa productos correctamente
     @JsonIgnore
     private List<Producto> productos = new ArrayList<>();
 
