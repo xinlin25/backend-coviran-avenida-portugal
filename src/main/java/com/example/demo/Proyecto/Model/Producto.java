@@ -50,7 +50,7 @@ public class Producto {
     private boolean enOferta = false;
 
     @Column
-    @DecimalMin(value = "0.0", inclusive = false)
+    @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal precioOferta;
 
     @NotNull
