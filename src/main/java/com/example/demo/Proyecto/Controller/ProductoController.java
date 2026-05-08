@@ -83,7 +83,6 @@ public class ProductoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> listarTodos() {
         return ResponseEntity.ok(productoService.listarTodos());
     }
@@ -106,19 +105,16 @@ public class ProductoController {
     }
 
     @GetMapping("/buscar/{nombre}")
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> buscarPorNombreParcial(@PathVariable String nombre) {
         return ResponseEntity.ok(productoService.buscarPorNombreParcial(nombre));
     }
 
     @GetMapping("/categoria/{categoriaId}")
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable Long categoriaId) {
         return ResponseEntity.ok(productoService.buscarPorCategoria(categoriaId));
     }
 
     @GetMapping("/buscar")
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> buscar(@RequestParam String query) {
         return ResponseEntity.ok(productoService.buscar(query));
     }

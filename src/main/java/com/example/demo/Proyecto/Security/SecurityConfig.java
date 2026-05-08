@@ -45,8 +45,10 @@ public class SecurityConfig {
                 })
             )
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() 
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/auth/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/categorias/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
             .anyRequest().authenticated()
         )
 
