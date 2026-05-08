@@ -49,7 +49,7 @@ public class ProductoService {
     }
 
     public List<Producto> buscarPorCategoria(Long categoriaId) {
-        return productoRepository.findByCategoriaId(categoriaId);
+        return productoRepository.findByCategoriaIdAndActivoTrue(categoriaId);
     }
 
     public List<Producto> buscar(String query) {
