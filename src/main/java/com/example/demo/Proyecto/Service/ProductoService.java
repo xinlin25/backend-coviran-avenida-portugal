@@ -28,6 +28,14 @@ public class ProductoService {
         return productoRepository.findAll();
     }
 
+    public List<Producto> listarOfertas() {
+        return productoRepository.findByEnOfertaTrueAndActivoTrue();
+    }
+
+    public List<Producto> listarDestacados() {
+        return productoRepository.findByDestacadoTrueAndActivoTrue();
+    }
+
     public Optional<Producto> buscarPorId(Long id) {
         return productoRepository.findById(id);
     }

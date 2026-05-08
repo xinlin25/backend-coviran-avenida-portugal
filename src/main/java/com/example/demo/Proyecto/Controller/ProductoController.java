@@ -49,7 +49,8 @@ public class ProductoController {
         @RequestParam(required = false) Boolean activo,
         @RequestParam(required = false) MultipartFile imagen,
         @RequestParam(required = false) Boolean enOferta,
-        @RequestParam(required = false) BigDecimal precioOferta
+        @RequestParam(required = false) BigDecimal precioOferta,
+        @RequestParam(required = false) Boolean destacado
     ) {
         if (productoService.existePorNombre(nombre)) return ResponseEntity.badRequest().build();
 
@@ -61,6 +62,7 @@ public class ProductoController {
         producto.setStock(stock);
         producto.setEnOferta(enOferta != null ? enOferta : false);
         producto.setPrecioOferta(precioOferta);
+        producto.setDestacado(destacado != null ? destacado : false);
         producto.setCategoria(
             categoriaService.buscarPorId(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"))
@@ -84,6 +86,16 @@ public class ProductoController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<List<Producto>> listarTodos() {
         return ResponseEntity.ok(productoService.listarTodos());
+    }
+
+    @GetMapping("/ofertas")
+    public ResponseEntity<List<Producto>> listarOfertas() {
+        return ResponseEntity.ok(productoService.listarOfertas());
+    }
+
+    @GetMapping("/destacados")
+    public ResponseEntity<List<Producto>> listarDestacados() {
+        return ResponseEntity.ok(productoService.listarDestacados());
     }
 
     @GetMapping("/{id}")
@@ -139,6 +151,7 @@ public class ProductoController {
         @RequestParam(required = false) Boolean activo,
         @RequestParam(required = false) Boolean enOferta,
         @RequestParam(required = false) BigDecimal precioOferta,
+        @RequestParam(required = false) Boolean destacado,
         @RequestParam(required = false) MultipartFile imagen
     ) {
         try {
@@ -151,6 +164,7 @@ public class ProductoController {
             producto.setActivo(activo != null ? activo : true);
             producto.setEnOferta(enOferta != null ? enOferta : false);
             producto.setPrecioOferta(precioOferta);
+            producto.setDestacado(destacado != null ? destacado : false);
             Categoria categoria = categoriaService.buscarPorId(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
             producto.setCategoria(categoria);

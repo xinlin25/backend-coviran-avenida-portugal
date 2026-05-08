@@ -21,6 +21,10 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     boolean existsByNombre(String nombre);
 
+    List<Producto> findByEnOfertaTrueAndActivoTrue();
+
+    List<Producto> findByDestacadoTrueAndActivoTrue();
+
     @Query("""
         SELECT p FROM Producto p
         WHERE LOWER(p.nombre) LIKE LOWER(CONCAT('%', :query, '%'))

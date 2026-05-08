@@ -53,6 +53,9 @@ public class Producto {
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal precioOferta;
 
+    @Column(nullable = false)
+    private boolean destacado = false;
+
     @NotNull
     @Column(nullable = false)
     private boolean activo = true;
