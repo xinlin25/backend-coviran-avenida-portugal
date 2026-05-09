@@ -84,6 +84,16 @@ public class CategoriaController {
         return ResponseEntity.ok(categorias);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Categoria> buscarPorId(@PathVariable Long id) {
+        return categoriaService
+            .buscarPorId(id)
+            .map(ResponseEntity::ok)
+            .orElseGet(() ->
+                ResponseEntity.notFound().build()
+            );
+    }
+
     @GetMapping("/nombre/")
     public ResponseEntity<Categoria> buscarPorNombre(@RequestParam String nombre) {
         Optional<Categoria> categoria = categoriaService.buscarPorNombre(nombre);
