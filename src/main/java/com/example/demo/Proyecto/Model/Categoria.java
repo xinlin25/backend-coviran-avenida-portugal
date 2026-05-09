@@ -41,7 +41,6 @@ public class Categoria {
     private Categoria parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<Categoria> hijos = new ArrayList<>();
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
