@@ -67,8 +67,11 @@ public class ProductoController {
             categoriaService.buscarPorId(categoriaId)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"))
         );
-        producto.setActivo(activo != null ? activo : true);
-
+        if (stock <= 0) {
+            producto.setActivo(false);
+        } else {
+            producto.setActivo(activo != null ? activo : true);
+    }
         try {
             if (imagen != null && !imagen.isEmpty()) {
                 String imageUrl = cloudinaryService.subirImagen(imagen);
@@ -158,7 +161,11 @@ public class ProductoController {
             producto.setPrecio(precio);
             producto.setMarca(marca);
             producto.setStock(stock);
-            producto.setActivo(activo != null ? activo : true);
+            if (stock <= 0) {
+                producto.setActivo(false);
+            } else {
+                producto.setActivo(activo != null ? activo : true);
+            }
             producto.setEnOferta(enOferta != null ? enOferta : false);
             producto.setPrecioOferta(precioOferta);
             producto.setDestacado(destacado != null ? destacado : false);
