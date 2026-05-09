@@ -15,15 +15,22 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     
     List<Producto> findByNombreContainingIgnoreCase(String nombre);
 
-    List<Producto> findByCategoriaIdAndActivoTrue(Long categoriaId);
+    List<Producto> findByCategoriaIdAndActivoTrueAndStockGreaterThan(
+        Long categoriaId,
+        int stock
+    );
 
     List<Producto> findByActivoTrue();
 
     boolean existsByNombre(String nombre);
 
-    List<Producto> findByEnOfertaTrueAndActivoTrue();
+    List<Producto> findByEnOfertaTrueAndActivoTrueAndStockGreaterThan(
+        int stock
+    );
 
-    List<Producto> findByDestacadoTrueAndActivoTrue();
+    List<Producto> findByDestacadoTrueAndActivoTrueAndStockGreaterThan(
+        int stock
+    );
 
     @Query("""
         SELECT p FROM Producto p

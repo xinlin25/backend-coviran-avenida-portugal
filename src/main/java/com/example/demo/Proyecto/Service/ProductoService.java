@@ -29,11 +29,11 @@ public class ProductoService {
     }
 
     public List<Producto> listarOfertas() {
-        return productoRepository.findByEnOfertaTrueAndActivoTrue();
+        return productoRepository.findByEnOfertaTrueAndActivoTrueAndStockGreaterThan(0);
     }
 
     public List<Producto> listarDestacados() {
-        return productoRepository.findByDestacadoTrueAndActivoTrue();
+        return productoRepository.findByDestacadoTrueAndActivoTrueAndStockGreaterThan(0);
     }
 
     public Optional<Producto> buscarPorId(Long id) {
@@ -49,7 +49,10 @@ public class ProductoService {
     }
 
     public List<Producto> buscarPorCategoria(Long categoriaId) {
-        return productoRepository.findByCategoriaIdAndActivoTrue(categoriaId);
+        return productoRepository.findByCategoriaIdAndActivoTrueAndStockGreaterThan(
+            categoriaId,
+            0
+        );
     }
 
     public List<Producto> buscar(String query) {
