@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
 @RestController
 @RequestMapping("/productos")
 public class ProductoController {
@@ -31,7 +30,8 @@ public class ProductoController {
     private final CategoriaService categoriaService;
     private final CloudinaryService cloudinaryService;
 
-    public ProductoController(ProductoService productoService, CategoriaService categoriaService, CloudinaryService cloudinaryService) {
+    public ProductoController(ProductoService productoService, CategoriaService categoriaService,
+            CloudinaryService cloudinaryService) {
         this.productoService = productoService;
         this.categoriaService = categoriaService;
         this.cloudinaryService = cloudinaryService;
@@ -40,19 +40,19 @@ public class ProductoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Producto> crearProducto(
-        @RequestParam String nombre,
-        @RequestParam BigDecimal precio,
-        @RequestParam String descripcion,
-        @RequestParam String marca,
-        @RequestParam int stock,
-        @RequestParam Long categoriaId,
-        @RequestParam(required = false) Boolean activo,
-        @RequestParam(required = false) MultipartFile imagen,
-        @RequestParam(required = false) Boolean enOferta,
-        @RequestParam(required = false) BigDecimal precioOferta,
-        @RequestParam(required = false) Boolean destacado
-    ) {
-        if (productoService.existePorNombre(nombre)) return ResponseEntity.badRequest().build();
+            @RequestParam String nombre,
+            @RequestParam BigDecimal precio,
+            @RequestParam String descripcion,
+            @RequestParam String marca,
+            @RequestParam int stock,
+            @RequestParam Long categoriaId,
+            @RequestParam(required = false) Boolean activo,
+            @RequestParam(required = false) MultipartFile imagen,
+            @RequestParam(required = false) Boolean enOferta,
+            @RequestParam(required = false) BigDecimal precioOferta,
+            @RequestParam(required = false) Boolean destacado) {
+        if (productoService.existePorNombre(nombre))
+            return ResponseEntity.badRequest().build();
 
         Producto producto = new Producto();
         producto.setNombre(nombre);
@@ -64,14 +64,13 @@ public class ProductoController {
         producto.setPrecioOferta(precioOferta);
         producto.setDestacado(destacado != null ? destacado : false);
         producto.setCategoria(
-            categoriaService.buscarPorId(categoriaId)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"))
-        );
+                categoriaService.buscarPorId(categoriaId)
+                        .orElseThrow(() -> new RuntimeException("Categoría no encontrada")));
         if (stock <= 0) {
             producto.setActivo(false);
         } else {
             producto.setActivo(activo != null ? activo : true);
-    }
+        }
         try {
             if (imagen != null && !imagen.isEmpty()) {
                 String imageUrl = cloudinaryService.subirImagen(imagen);
@@ -131,9 +130,9 @@ public class ProductoController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> borrarProducto(@PathVariable Long id) {
-        if (productoService.buscarPorId(id).isEmpty()) 
-            return ResponseEntity.notFound().build();    
-        
+        if (productoService.buscarPorId(id).isEmpty())
+            return ResponseEntity.notFound().build();
+
         productoService.borrarPorId(id);
         return ResponseEntity.noContent().build();
     }
@@ -141,19 +140,18 @@ public class ProductoController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Producto> actualizarProducto(
-        @PathVariable Long id,
-        @RequestParam String nombre,
-        @RequestParam String descripcion,
-        @RequestParam BigDecimal precio,
-        @RequestParam String marca,
-        @RequestParam Integer stock,
-        @RequestParam Long categoriaId,
-        @RequestParam(required = false) Boolean activo,
-        @RequestParam(required = false) Boolean enOferta,
-        @RequestParam(required = false) BigDecimal precioOferta,
-        @RequestParam(required = false) Boolean destacado,
-        @RequestParam(required = false) MultipartFile imagen
-    ) {
+            @PathVariable Long id,
+            @RequestParam String nombre,
+            @RequestParam String descripcion,
+            @RequestParam BigDecimal precio,
+            @RequestParam String marca,
+            @RequestParam Integer stock,
+            @RequestParam Long categoriaId,
+            @RequestParam(required = false) Boolean activo,
+            @RequestParam(required = false) Boolean enOferta,
+            @RequestParam(required = false) BigDecimal precioOferta,
+            @RequestParam(required = false) Boolean destacado,
+            @RequestParam(required = false) MultipartFile imagen) {
         try {
             Producto producto = productoService.buscarPorId(id).orElseThrow();
             producto.setNombre(nombre);
@@ -170,7 +168,7 @@ public class ProductoController {
             producto.setPrecioOferta(precioOferta);
             producto.setDestacado(destacado != null ? destacado : false);
             Categoria categoria = categoriaService.buscarPorId(categoriaId)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
             producto.setCategoria(categoria);
 
             if (imagen != null && !imagen.isEmpty()) {

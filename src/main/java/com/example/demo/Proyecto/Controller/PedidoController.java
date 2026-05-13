@@ -42,7 +42,7 @@ public class PedidoController {
     public ResponseEntity<List<Pedido>> listarPedidos() {
         return ResponseEntity.ok(pedidoService.listarTodos());
     }
-    
+
     @GetMapping("/mis-pedidos")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<List<Pedido>> listarPorCliente(@AuthenticationPrincipal Usuario usuario) {
@@ -65,11 +65,10 @@ public class PedidoController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Pedido> cambiarEstado(@PathVariable Long id, @RequestParam Estado estado) {
         Pedido pedido = pedidoService.buscarPorId(id)
-        .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        if (pedido.getEstado() == Estado.COMPLETADO) 
+        if (pedido.getEstado() == Estado.COMPLETADO)
             throw new IllegalStateException("Un pedido completado no puede cambiar de estado");
-
 
         Pedido actualizado = pedidoService.cambiarEstado(id, estado);
 
@@ -81,7 +80,7 @@ public class PedidoController {
         Pedido pedido = pedidoService.buscarPorId(id).orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
         if (usuario.getRol() == Rol.CLIENTE &&
-            !pedido.getCliente().getId().equals(usuario.getId())) {
+                !pedido.getCliente().getId().equals(usuario.getId())) {
             return ResponseEntity.status(403).build();
         }
 

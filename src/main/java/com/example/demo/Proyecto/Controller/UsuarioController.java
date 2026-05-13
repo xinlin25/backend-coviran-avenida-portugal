@@ -36,16 +36,15 @@ public class UsuarioController {
     @PreAuthorize("hasAnyRole('CLIENTE','EMPLEADO','ADMIN')")
     public ResponseEntity<UsuarioPerfilDTO> miPerfil(Authentication auth) {
         Usuario u = usuarioService.buscarPorCorreo(auth.getName())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(new UsuarioPerfilDTO(
-            u.getId(),
-            u.getNombreCompleto(),
-            u.getCorreo(),
-            u.getTlf(),
-            u.getDireccion(),
-            u.getRol()
-        ));
+                u.getId(),
+                u.getNombreCompleto(),
+                u.getCorreo(),
+                u.getTlf(),
+                u.getDireccion(),
+                u.getRol()));
     }
 
     @PutMapping("/mi-perfil")
@@ -55,18 +54,16 @@ public class UsuarioController {
             @RequestBody ActualizarPerfilDTO datos) {
 
         return ResponseEntity.ok(
-            usuarioService.actualizarPerfil(auth.getName(), datos)
-        );
+                usuarioService.actualizarPerfil(auth.getName(), datos));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Usuario> actualizarUsuario(
-        @PathVariable Long id,
-        @RequestBody ActualizarUsuarioDTO actualizado
-    ) {
+            @PathVariable Long id,
+            @RequestBody ActualizarUsuarioDTO actualizado) {
         Usuario usuario = usuarioService.buscarPorId(id)
-            .orElseThrow();
+                .orElseThrow();
 
         usuario.setNombreCompleto(actualizado.nombreCompleto());
         usuario.setTlf(actualizado.tlf());
@@ -92,7 +89,6 @@ public class UsuarioController {
 
         return ResponseEntity.ok(usuarioService.guardarUsuario(usuario));
     }
-
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -120,7 +116,7 @@ public class UsuarioController {
         Optional<Usuario> usuario = usuarioService.buscarPorTlf(tlf);
 
         return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    } 
+    }
 
     @PutMapping("/{id}/desactivar")
     @PreAuthorize("hasRole('ADMIN')")

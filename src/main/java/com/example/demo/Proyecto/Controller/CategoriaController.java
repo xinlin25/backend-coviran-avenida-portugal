@@ -20,8 +20,6 @@ import com.example.demo.Proyecto.DTO.CrearCategoriaDTO;
 import com.example.demo.Proyecto.Model.Categoria;
 import com.example.demo.Proyecto.Service.CategoriaService;
 
-
-
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaController {
@@ -35,7 +33,8 @@ public class CategoriaController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Categoria> crearCategoria(@RequestBody CrearCategoriaDTO datos) {
 
-        if (categoriaService.existePorNombre(datos.nombre())) return ResponseEntity.badRequest().build();
+        if (categoriaService.existePorNombre(datos.nombre()))
+            return ResponseEntity.badRequest().build();
 
         Categoria categoria = new Categoria();
         categoria.setNombre(datos.nombre());
@@ -43,7 +42,7 @@ public class CategoriaController {
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService.buscarPorId(datos.categoriaPadreId())
-                .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
+                    .orElseThrow(() -> new RuntimeException("Categoría padre no encontrada"));
 
             categoria.setParent(padre);
         }
@@ -54,23 +53,22 @@ public class CategoriaController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
     public ResponseEntity<Categoria> actualizarCategoria(
-        @PathVariable Long id,
-        @RequestBody ActualizarCategoriaDTO datos
-    ) {
+            @PathVariable Long id,
+            @RequestBody ActualizarCategoriaDTO datos) {
 
         Categoria categoria = categoriaService.buscarPorId(id)
-            .orElseThrow();
+                .orElseThrow();
 
         categoria.setNombre(datos.nombre());
-        if (datos.activo() != null) categoria.setActivo(datos.activo());
-
+        if (datos.activo() != null)
+            categoria.setActivo(datos.activo());
 
         if (datos.categoriaPadreId() != null) {
             Categoria padre = categoriaService
-                .buscarPorId(datos.categoriaPadreId())
-                .orElseThrow();
+                    .buscarPorId(datos.categoriaPadreId())
+                    .orElseThrow();
             categoria.setParent(padre);
-        } else 
+        } else
             categoria.setParent(null);
 
         categoriaService.guardarCategoria(categoria);
@@ -87,17 +85,15 @@ public class CategoriaController {
     @GetMapping("/{id}")
     public ResponseEntity<Categoria> buscarPorId(@PathVariable Long id) {
         return categoriaService
-            .buscarPorId(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(() ->
-                ResponseEntity.notFound().build()
-            );
+                .buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/nombre/")
     public ResponseEntity<Categoria> buscarPorNombre(@RequestParam String nombre) {
         Optional<Categoria> categoria = categoriaService.buscarPorNombre(nombre);
-        //Si existe 200 OK si no 404 Not Found
+        // Si existe 200 OK si no 404 Not Found
         return categoria.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -106,11 +102,11 @@ public class CategoriaController {
         List<Categoria> categorias = categoriaService.buscarPorNombreParcial(nombre);
         return ResponseEntity.ok(categorias);
     }
-    
+
     @DeleteMapping("/nombre/{nombre}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> borrarPorNombre(@PathVariable String nombre) {
-        if (!categoriaService.existePorNombre(nombre)) 
+        if (!categoriaService.existePorNombre(nombre))
             return ResponseEntity.notFound().build();
 
         categoriaService.borrarPorNombre(nombre);

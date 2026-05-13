@@ -35,13 +35,11 @@ public class CarritoController {
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<Carrito> agregarProducto(
             Authentication auth,
-            @Valid @RequestBody AgregarProductoCarritoDTO dto
-    ) {
+            @Valid @RequestBody AgregarProductoCarritoDTO dto) {
         Carrito carrito = carritoService.añadirProducto(
-                auth.getName(),      
+                auth.getName(),
                 dto.getProductoId(),
-                dto.getCantidad()
-        );
+                dto.getCantidad());
 
         return ResponseEntity.ok(carrito);
     }
