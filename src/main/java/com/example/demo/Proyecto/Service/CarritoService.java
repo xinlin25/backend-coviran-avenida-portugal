@@ -28,12 +28,11 @@ public class CarritoService {
     private final PedidoRepository pedidoRepository;
 
     public CarritoService(
-        CarritoRepository carritoRepository,
-        CarritoItemRepository carritoItemRepository,
-        ProductoRepository productoRepository,
-        UsuarioRepository usuarioRepository,
-        PedidoRepository pedidoRepository
-    ) {
+            CarritoRepository carritoRepository,
+            CarritoItemRepository carritoItemRepository,
+            ProductoRepository productoRepository,
+            UsuarioRepository usuarioRepository,
+            PedidoRepository pedidoRepository) {
         this.carritoRepository = carritoRepository;
         this.carritoItemRepository = carritoItemRepository;
         this.productoRepository = productoRepository;
@@ -44,10 +43,10 @@ public class CarritoService {
     @Transactional(readOnly = true)
     public Carrito obtenerCarritoActivo(String correoUsuario) {
         Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-        .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
+                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
     }
 
     @Transactional
@@ -93,14 +92,14 @@ public class CarritoService {
     @Transactional
     public Pedido confirmarCarrito(String correoUsuario) {
         Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Carrito carrito = carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-        .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
+                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
 
-        if (carrito.getItems().isEmpty()) 
+        if (carrito.getItems().isEmpty())
             throw new IllegalStateException("El carrito se encuentra vacío actualmente");
-        
+
         Pedido pedido = new Pedido();
         pedido.setCliente(usuario);
         pedido.setFecha(LocalDate.now());
@@ -125,5 +124,54 @@ public class CarritoService {
         carrito.setEstado(EstadoCarrito.CONFIRMADO);
 
         return pedidoRepository.save(pedido);
+    }
+
+    @Transactional
+    public Carrito sumarCantidadItem(Long itemId) {
+        CarritoItem item = carritoItemRepository
+                .findById(itemId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Item no encontrado"));
+
+        item.setCantidad(
+                item.getCantidad() + 1);
+
+        carritoItemRepository.save(item);
+
+        return item.getCarrito();
+    }
+
+    @Transactional
+    public Carrito restarCantidadItem(Long itemId) {
+        CarritoItem item = carritoItemRepository
+                .findById(itemId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Item no encontrado"));
+
+        int nuevaCantidad = item.getCantidad() - 1;
+
+        if (nuevaCantidad <= 0) {
+            Carrito carrito = item.getCarrito();
+            carrito.getItems().remove(item);
+            carritoItemRepository.delete(item);
+            return carrito;
+        }
+        item.setCantidad(nuevaCantidad);
+        carritoItemRepository.save(item);
+
+        return item.getCarrito();
+    }
+
+    @Transactional
+    public Carrito eliminarItem(Long itemId) {
+        CarritoItem item = carritoItemRepository
+                .findById(itemId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Item no encontrado"));
+
+        Carrito carrito = item.getCarrito();
+        carrito.getItems().remove(item);
+        carritoItemRepository.delete(item);
+        return carrito;
     }
 }
