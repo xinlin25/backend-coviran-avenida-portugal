@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.Proyecto.DTO.ConfirmarPedidoDTO;
 import com.example.demo.Proyecto.Enum.Estado;
 import com.example.demo.Proyecto.Enum.EstadoCarrito;
 import com.example.demo.Proyecto.Model.Carrito;
@@ -90,7 +91,7 @@ public class CarritoService {
     }
 
     @Transactional
-    public Pedido confirmarCarrito(String correoUsuario) {
+    public Pedido confirmarCarrito(String correoUsuario, ConfirmarPedidoDTO dto) {
         Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -104,7 +105,8 @@ public class CarritoService {
         pedido.setCliente(usuario);
         pedido.setFecha(LocalDate.now());
         pedido.setEstado(Estado.PENDIENTE);
-
+        pedido.setMetodoPago(dto.getMetodoPago());
+        pedido.setEspecificacionesEntrega(dto.getEspecificacionesEntrega());
         double total = 0;
 
         for (CarritoItem item : carrito.getItems()) {
@@ -119,8 +121,7 @@ public class CarritoService {
             total += detalle.getCantidad() * detalle.getPrecioUnitario();
         }
 
-        pedido.setTotal(total);
-
+        pedido.setTotal(total < 50 ? total + 2 : total);
         carrito.setEstado(EstadoCarrito.CONFIRMADO);
 
         return pedidoRepository.save(pedido);
@@ -174,4 +175,5 @@ public class CarritoService {
         carritoItemRepository.delete(item);
         return carrito;
     }
+
 }

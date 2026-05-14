@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Proyecto.DTO.AgregarProductoCarritoDTO;
+import com.example.demo.Proyecto.DTO.ConfirmarPedidoDTO;
 import com.example.demo.Proyecto.Model.Carrito;
 import com.example.demo.Proyecto.Model.Pedido;
 import com.example.demo.Proyecto.Service.CarritoService;
@@ -36,8 +37,7 @@ public class CarritoController {
 
     @PostMapping("/agregar")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<Carrito> agregarProducto(
-            Authentication auth,
+    public ResponseEntity<Carrito> agregarProducto(Authentication auth,
             @Valid @RequestBody AgregarProductoCarritoDTO dto) {
         Carrito carrito = carritoService.añadirProducto(
                 auth.getName(),
@@ -49,39 +49,26 @@ public class CarritoController {
 
     @PostMapping("/confirmar")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<Pedido> confirmarPedido(Authentication auth) {
-        Pedido pedido = carritoService.confirmarCarrito(auth.getName());
-
+    public ResponseEntity<Pedido> confirmarPedido(Authentication auth, @RequestBody ConfirmarPedidoDTO dto) {
+        Pedido pedido = carritoService.confirmarCarrito(auth.getName(), dto);
         return ResponseEntity.ok(pedido);
     }
 
     @PutMapping("/item/{itemId}/sumar")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<Carrito> sumarCantidadItem(
-            @PathVariable Long itemId) {
-
-        return ResponseEntity.ok(
-                carritoService
-                        .sumarCantidadItem(itemId));
+    public ResponseEntity<Carrito> sumarCantidadItem(@PathVariable Long itemId) {
+        return ResponseEntity.ok(carritoService.sumarCantidadItem(itemId));
     }
 
     @PutMapping("/item/{itemId}/restar")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<Carrito> restarCantidadItem(
-            @PathVariable Long itemId) {
-
-        return ResponseEntity.ok(
-                carritoService
-                        .restarCantidadItem(itemId));
+    public ResponseEntity<Carrito> restarCantidadItem(@PathVariable Long itemId) {
+        return ResponseEntity.ok(carritoService.restarCantidadItem(itemId));
     }
 
     @DeleteMapping("/item/{itemId}")
     @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<Carrito> eliminarItem(
-            @PathVariable Long itemId) {
-
-        return ResponseEntity.ok(
-                carritoService
-                        .eliminarItem(itemId));
+    public ResponseEntity<Carrito> eliminarItem(@PathVariable Long itemId) {
+        return ResponseEntity.ok(carritoService.eliminarItem(itemId));
     }
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.demo.Proyecto.Enum.Estado;
+import com.example.demo.Proyecto.Enum.MetodoPago;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -45,7 +46,7 @@ public class Pedido {
 
     @Column(nullable = false)
     @NotNull
-    @JsonIgnore 
+    @JsonIgnore
     private double total;
 
     @Column(nullable = false)
@@ -60,4 +61,11 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<DetallePedido> detalles = new ArrayList<>();
+
+    @Column(length = 500)
+    private String especificacionesEntrega;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MetodoPago metodoPago;
 }
