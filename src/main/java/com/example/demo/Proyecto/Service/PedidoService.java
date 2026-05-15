@@ -88,7 +88,11 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
+        if (!pedido.getEstado().puedeTransicionarA(nuevoEstado))
+            throw new IllegalStateException("Transición inválida");
+
         pedido.setEstado(nuevoEstado);
+
         return pedidoRepository.save(pedido);
     }
 }
