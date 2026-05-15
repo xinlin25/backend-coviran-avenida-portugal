@@ -110,6 +110,11 @@ public class CarritoService {
         double total = 0;
 
         for (CarritoItem item : carrito.getItems()) {
+            Producto producto = item.getProducto();
+
+            if (producto.getStock() < item.getCantidad())
+                throw new RuntimeException("Stock insuficiente para " + producto.getNombre());
+
             DetallePedido detalle = new DetallePedido();
             detalle.setPedido(pedido);
             detalle.setProducto(item.getProducto());
@@ -117,6 +122,12 @@ public class CarritoService {
             detalle.setPrecioUnitario(item.getProducto().getPrecio().doubleValue());
 
             pedido.getDetalles().add(detalle);
+            producto.setStock(producto.getStock() - item.getCantidad());
+
+            if (producto.getStock() <= 0)
+                producto.setActivo(false);
+
+            productoRepository.save(producto);
 
             total += detalle.getCantidad() * detalle.getPrecioUnitario();
         }
