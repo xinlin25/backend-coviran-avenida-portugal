@@ -86,4 +86,10 @@ public class PedidoController {
 
         return ResponseEntity.ok(pedido);
     }
+
+    @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLEADO')")
+    public ResponseEntity<List<Pedido>> buscarPedidos(@RequestParam String texto) {
+        return ResponseEntity.ok(pedidoService.buscarPedidos(texto));
+    }
 }

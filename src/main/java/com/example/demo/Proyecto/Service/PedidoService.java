@@ -69,6 +69,20 @@ public class PedidoService {
         return pedidoRepository.findByEstado(estado);
     }
 
+    public List<Pedido> buscarPedidos(String texto) {
+        try {
+            Long id = Long.parseLong(texto);
+            return pedidoRepository.findByIdOrEstado(id, null);
+        } catch (Exception e) {
+            try {
+                Estado estado = Estado.valueOf(texto.toUpperCase());
+                return pedidoRepository.findByIdOrEstado(null, estado);
+            } catch (Exception ex) {
+                return List.of();
+            }
+        }
+    }
+
     @Transactional
     public Pedido cambiarEstado(Long pedidoId, Estado nuevoEstado) {
         Pedido pedido = pedidoRepository.findById(pedidoId)

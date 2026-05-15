@@ -27,10 +27,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table (name = "usuarios")
+@Table(name = "usuarios")
 @Getter
 @Setter
-public class Usuario implements UserDetails{
+public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,7 +54,6 @@ public class Usuario implements UserDetails{
     @Column(nullable = false, length = 60)
     @Size(min = 8, max = 60)
     @NotBlank(message = "La contraseña es obligatoria.")
-    
     private String password;
 
     @Column(nullable = false, length = 100)
