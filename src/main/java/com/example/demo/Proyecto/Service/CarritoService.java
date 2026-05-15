@@ -195,16 +195,25 @@ public class CarritoService {
     public String crearSesionStripe(String correoUsuario, ConfirmarPedidoDTO dto) throws Exception {
         Usuario usuario = usuarioRepository
                 .findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Usuario no encontrado"));
 
         Carrito carrito = carritoRepository
                 .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
+                .orElseThrow(() -> new RuntimeException(
+                        "No existe un carrito activo"));
 
         if (carrito.getItems().isEmpty())
             throw new IllegalStateException("Carrito vacío");
 
         List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
+
+        double total = carrito
+                .getItems()
+                .stream()
+                .mapToDouble(
+                        carritoItem -> carritoItem.getCantidad() * carritoItem.getProducto().getPrecio().doubleValue())
+                .sum();
 
         for (CarritoItem item : carrito.getItems()) {
             Producto producto = item.getProducto();
@@ -213,22 +222,34 @@ public class CarritoService {
             SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem
                     .builder()
                     .setQuantity((long) item.getCantidad())
-                    .setPriceData(
-                            SessionCreateParams.LineItem.PriceData
+                    .setPriceData(SessionCreateParams.LineItem.PriceData
+                            .builder()
+                            .setCurrency("eur")
+                            .setUnitAmount(precio)
+                            .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
                                     .builder()
-                                    .setCurrency("eur")
-                                    .setUnitAmount(precio)
-                                    .setProductData(
-                                            SessionCreateParams.LineItem.PriceData.ProductData
-                                                    .builder()
-                                                    .setName(producto.getNombre())
-                                                    .build())
-
-                                    .build()
-
-                    )
+                                    .setName(producto.getNombre())
+                                    .build())
+                            .build())
                     .build();
             lineItems.add(lineItem);
+        }
+
+        if (total < 50) {
+            SessionCreateParams.LineItem envioItem = SessionCreateParams.LineItem
+                    .builder()
+                    .setQuantity(1L)
+                    .setPriceData(SessionCreateParams.LineItem.PriceData
+                            .builder()
+                            .setCurrency("eur")
+                            .setUnitAmount(200L)
+                            .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
+                                    .builder()
+                                    .setName("Gastos de envío")
+                                    .build())
+                            .build())
+                    .build();
+            lineItems.add(envioItem);
         }
 
         SessionCreateParams params = SessionCreateParams
@@ -236,10 +257,11 @@ public class CarritoService {
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl("http://localhost:4200/pedidos")
                 .setCancelUrl("http://localhost:4200/carrito")
-                .addAllLineItem(lineItems).build();
+                .addAllLineItem(lineItems)
+                .build();
 
         Session session = Session.create(params);
+
         return session.getUrl();
     }
-
 }
