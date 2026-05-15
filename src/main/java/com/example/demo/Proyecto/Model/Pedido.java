@@ -46,7 +46,6 @@ public class Pedido {
 
     @Column(nullable = false)
     @NotNull
-    @JsonIgnore
     private double total;
 
     @Column(nullable = false)

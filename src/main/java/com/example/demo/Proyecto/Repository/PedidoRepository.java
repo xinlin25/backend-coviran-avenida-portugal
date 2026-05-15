@@ -7,10 +7,9 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.Proyecto.Model.Pedido;
 import com.example.demo.Proyecto.Enum.Estado;
 
-
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
-    List<Pedido> findByClienteId(Long clienteId);
+    List<Pedido> findByClienteIdOrderByIdDesc(Long clienteId);
 
     List<Pedido> findByEmpleadoId(Long empleadoId);
 

@@ -25,9 +25,7 @@ public class PedidoService {
     private double calcularTotal(Pedido pedido) {
         return pedido.getDetalles()
                 .stream()
-                .mapToDouble(detalle ->
-                        detalle.getPrecioUnitario() * detalle.getCantidad()
-                )
+                .mapToDouble(detalle -> detalle.getPrecioUnitario() * detalle.getCantidad())
                 .sum();
     }
 
@@ -35,7 +33,7 @@ public class PedidoService {
         for (DetallePedido detalle : pedido.getDetalles()) {
             detalle.setPedido(pedido);
         }
-        
+
         pedido.setFecha(LocalDate.now());
         pedido.setEstado(Estado.PENDIENTE);
 
@@ -56,7 +54,7 @@ public class PedidoService {
     }
 
     public List<Pedido> listarPorCliente(Long clienteId) {
-        return pedidoRepository.findByClienteId(clienteId);
+        return pedidoRepository.findByClienteIdOrderByIdDesc(clienteId);
     }
 
     public List<Pedido> listarPorEmpleado(Long empleadoId) {
@@ -74,7 +72,7 @@ public class PedidoService {
     @Transactional
     public Pedido cambiarEstado(Long pedidoId, Estado nuevoEstado) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
-        .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
         pedido.setEstado(nuevoEstado);
         return pedidoRepository.save(pedido);
