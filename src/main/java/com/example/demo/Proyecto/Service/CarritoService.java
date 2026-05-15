@@ -19,6 +19,10 @@ import com.example.demo.Proyecto.Repository.CarritoRepository;
 import com.example.demo.Proyecto.Repository.PedidoRepository;
 import com.example.demo.Proyecto.Repository.ProductoRepository;
 import com.example.demo.Proyecto.Repository.UsuarioRepository;
+import java.util.ArrayList;
+import java.util.List;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
 
 @Service
 public class CarritoService {
@@ -185,6 +189,57 @@ public class CarritoService {
         carrito.getItems().remove(item);
         carritoItemRepository.delete(item);
         return carrito;
+    }
+
+    @Transactional
+    public String crearSesionStripe(String correoUsuario, ConfirmarPedidoDTO dto) throws Exception {
+        Usuario usuario = usuarioRepository
+                .findByCorreo(correoUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Carrito carrito = carritoRepository
+                .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
+                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
+
+        if (carrito.getItems().isEmpty())
+            throw new IllegalStateException("Carrito vacío");
+
+        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
+
+        for (CarritoItem item : carrito.getItems()) {
+            Producto producto = item.getProducto();
+            long precio = Math.round(producto.getPrecio().doubleValue() * 100);
+
+            SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem
+                    .builder()
+                    .setQuantity((long) item.getCantidad())
+                    .setPriceData(
+                            SessionCreateParams.LineItem.PriceData
+                                    .builder()
+                                    .setCurrency("eur")
+                                    .setUnitAmount(precio)
+                                    .setProductData(
+                                            SessionCreateParams.LineItem.PriceData.ProductData
+                                                    .builder()
+                                                    .setName(producto.getNombre())
+                                                    .build())
+
+                                    .build()
+
+                    )
+                    .build();
+            lineItems.add(lineItem);
+        }
+
+        SessionCreateParams params = SessionCreateParams
+                .builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl("http://localhost:4200/pedidos")
+                .setCancelUrl("http://localhost:4200/carrito")
+                .addAllLineItem(lineItems).build();
+
+        Session session = Session.create(params);
+        return session.getUrl();
     }
 
 }

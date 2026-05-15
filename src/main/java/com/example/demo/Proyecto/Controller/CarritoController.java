@@ -71,4 +71,13 @@ public class CarritoController {
     public ResponseEntity<Carrito> eliminarItem(@PathVariable Long itemId) {
         return ResponseEntity.ok(carritoService.eliminarItem(itemId));
     }
+
+    @PostMapping("/checkout")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<String> checkoutStripe(Authentication auth, @RequestBody ConfirmarPedidoDTO dto)
+            throws Exception {
+
+        String url = carritoService.crearSesionStripe(auth.getName(), dto);
+        return ResponseEntity.ok(url);
+    }
 }
