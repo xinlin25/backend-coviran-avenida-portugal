@@ -7,14 +7,15 @@ import com.example.demo.Proyecto.Model.Categoria;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
-    //Busca categorias por nombre exacto
+    // Busca categorias por nombre exacto
     Optional<Categoria> findByNombre(String nombre);
 
-    //Busca todas las categorias cuyo nombre contenga el texto
+    // Busca todas las categorias cuyo nombre contenga el texto
     List<Categoria> findByNombreContainingIgnoreCase(String nombre);
+
+    List<Categoria> findByActivoTrue();
 
     boolean existsByNombre(String nombre);
 

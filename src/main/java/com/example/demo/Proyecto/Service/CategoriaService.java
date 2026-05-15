@@ -14,16 +14,16 @@ import jakarta.transaction.Transactional;
 public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
 
-    public CategoriaService (CategoriaRepository categoriaRepository) {
+    public CategoriaService(CategoriaRepository categoriaRepository) {
         this.categoriaRepository = categoriaRepository;
     }
 
-    //Inserta o Actualiza la categoria en la bd
+    // Inserta o Actualiza la categoria en la bd
     public Categoria guardarCategoria(Categoria categoria) {
         return categoriaRepository.save(categoria);
     }
 
-    //Optional por si no existe
+    // Optional por si no existe
     public Optional<Categoria> buscarPorNombre(String nombre) {
         return categoriaRepository.findByNombre(nombre);
     }
@@ -47,5 +47,9 @@ public class CategoriaService {
 
     public List<Categoria> listarTodas() {
         return categoriaRepository.findAll();
+    }
+
+    public List<Categoria> listarActivas() {
+        return categoriaRepository.findByActivoTrue();
     }
 }

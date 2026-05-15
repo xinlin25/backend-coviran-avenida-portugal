@@ -76,10 +76,15 @@ public class CategoriaController {
         return ResponseEntity.ok(categoria);
     }
 
+    @GetMapping("/admin")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    public ResponseEntity<List<Categoria>> listarTodas() {
+        return ResponseEntity.ok(categoriaService.listarTodas());
+    }
+
     @GetMapping
-    public ResponseEntity<List<Categoria>> listarCategorias() {
-        List<Categoria> categorias = categoriaService.listarTodas();
-        return ResponseEntity.ok(categorias);
+    public ResponseEntity<List<Categoria>> listarActivas() {
+        return ResponseEntity.ok(categoriaService.listarActivas());
     }
 
     @GetMapping("/{id}")
