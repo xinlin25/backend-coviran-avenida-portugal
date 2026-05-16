@@ -255,8 +255,10 @@ public class CarritoService {
         SessionCreateParams params = SessionCreateParams
                 .builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:4200/pedidos")
-                .setCancelUrl("http://localhost:4200/carrito")
+                // .setSuccessUrl("http://localhost:4200/pedidos")
+                // .setCancelUrl("http://localhost:4200/carrito")
+                .setSuccessUrl("https://frontend-coviran-avenida-portugal.vercel.app/pedidos")
+                .setCancelUrl("https://frontend-coviran-avenida-portugal.vercel.app/carrito")
                 .addAllLineItem(lineItems)
                 .build();
 
