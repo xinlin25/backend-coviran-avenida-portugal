@@ -25,7 +25,7 @@ public class UsuarioService {
     }
 
     public Usuario guardarUsuario(Usuario u) {
-        u.setPassword(u.getPassword());
+        u.setPassword(passwordEncoder.encode(u.getPassword()));
         return usuarioRepository.save(u);
     }
 
