@@ -13,6 +13,12 @@ import com.example.demo.Proyecto.Enum.Rol;
 import com.example.demo.Proyecto.Model.Usuario;
 import com.example.demo.Proyecto.Security.JwtUtils;
 import com.example.demo.Proyecto.Service.UsuarioService;
+import com.example.demo.Proyecto.Service.EmailService;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import com.example.demo.Proyecto.Model.PasswordResetToken;
+import com.example.demo.Proyecto.Repository.PasswordResetTokenRepository;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,20 +26,23 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final EmailService emailService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
-    public AuthController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public AuthController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
+            EmailService emailService, PasswordResetTokenRepository passwordResetTokenRepository) {
         this.usuarioService = usuarioService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.emailService = emailService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
         Usuario usuario = usuarioService.buscarPorCorreo(request.getCorreo())
-                .orElseThrow(() -> 
-                    new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas")
-                );
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");
@@ -52,5 +61,30 @@ public class AuthController {
 
         u.setRol(Rol.CLIENTE);
         return ResponseEntity.ok(usuarioService.guardarUsuario(u));
+    }
+
+    @PostMapping("/recuperar-password")
+    public ResponseEntity<String> recuperarPassword(@RequestBody RecuperarPasswordRequest request) {
+        usuarioService.buscarPorCorreo(request.getCorreo())
+                .ifPresent(usuario -> {
+
+                    String token = UUID.randomUUID().toString();
+
+                    PasswordResetToken resetToken = new PasswordResetToken(token, LocalDateTime.now().plusMinutes(30),
+                            usuario);
+
+                    passwordResetTokenRepository.save(resetToken);
+
+                    String url = "http://localhost:4200/restablecer-password?token=" + token;
+
+                    emailService.enviarCorreo(
+                            usuario.getCorreo(),
+                            "Recuperación de contraseña",
+                            "Pulsa en este enlace para restablecer tu contraseña:\n\n"
+                                    + url);
+                });
+
+        return ResponseEntity.ok(
+                "Si el correo existe, se enviará un enlace de recuperación");
     }
 }

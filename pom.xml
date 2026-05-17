@@ -123,6 +123,12 @@
             <artifactId>stripe-java</artifactId>
             <version>29.0.0</version>
         </dependency>
+
+        <!-- Mail-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
