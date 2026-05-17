@@ -26,244 +26,251 @@ import com.stripe.param.checkout.SessionCreateParams;
 
 @Service
 public class CarritoService {
-    private final CarritoRepository carritoRepository;
-    private final CarritoItemRepository carritoItemRepository;
-    private final ProductoRepository productoRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final PedidoRepository pedidoRepository;
+        private final CarritoRepository carritoRepository;
+        private final CarritoItemRepository carritoItemRepository;
+        private final ProductoRepository productoRepository;
+        private final UsuarioRepository usuarioRepository;
+        private final PedidoRepository pedidoRepository;
 
-    public CarritoService(
-            CarritoRepository carritoRepository,
-            CarritoItemRepository carritoItemRepository,
-            ProductoRepository productoRepository,
-            UsuarioRepository usuarioRepository,
-            PedidoRepository pedidoRepository) {
-        this.carritoRepository = carritoRepository;
-        this.carritoItemRepository = carritoItemRepository;
-        this.productoRepository = productoRepository;
-        this.usuarioRepository = usuarioRepository;
-        this.pedidoRepository = pedidoRepository;
-    }
-
-    @Transactional(readOnly = true)
-    public Carrito obtenerCarritoActivo(String correoUsuario) {
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        return carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
-    }
-
-    @Transactional
-    public Carrito añadirProducto(String correoUsuario, Long productoId, int cantidad) {
-        if (cantidad <= 0)
-            throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
-
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Carrito carrito = carritoRepository
-                .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-                .orElseGet(() -> {
-                    Carrito nuevo = new Carrito();
-                    nuevo.setUsuario(usuario);
-                    nuevo.setEstado(EstadoCarrito.ACTIVO);
-                    return carritoRepository.save(nuevo);
-                });
-
-        Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-        CarritoItem item = carritoItemRepository
-                .findByCarritoAndProducto(carrito, producto)
-                .orElse(null);
-
-        if (item != null) {
-            item.setCantidad(item.getCantidad() + cantidad);
-        } else {
-            item = new CarritoItem();
-            item.setCarrito(carrito);
-            item.setProducto(producto);
-            item.setCantidad(cantidad);
-            item.setPrecioUnitario(producto.getPrecio().doubleValue());
-            carrito.getItems().add(item);
+        public CarritoService(
+                        CarritoRepository carritoRepository,
+                        CarritoItemRepository carritoItemRepository,
+                        ProductoRepository productoRepository,
+                        UsuarioRepository usuarioRepository,
+                        PedidoRepository pedidoRepository) {
+                this.carritoRepository = carritoRepository;
+                this.carritoItemRepository = carritoItemRepository;
+                this.productoRepository = productoRepository;
+                this.usuarioRepository = usuarioRepository;
+                this.pedidoRepository = pedidoRepository;
         }
 
-        carritoItemRepository.save(item);
+        @Transactional(readOnly = true)
+        public Carrito obtenerCarritoActivo(String correoUsuario) {
+                Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return carrito;
-    }
-
-    @Transactional
-    public Pedido confirmarCarrito(String correoUsuario, ConfirmarPedidoDTO dto) {
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Carrito carrito = carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
-
-        if (carrito.getItems().isEmpty())
-            throw new IllegalStateException("El carrito se encuentra vacío actualmente");
-
-        Pedido pedido = new Pedido();
-        pedido.setCliente(usuario);
-        pedido.setFecha(LocalDate.now());
-        pedido.setEstado(Estado.PENDIENTE);
-        pedido.setMetodoPago(dto.getMetodoPago());
-        pedido.setEspecificacionesEntrega(dto.getEspecificacionesEntrega());
-        double total = 0;
-
-        for (CarritoItem item : carrito.getItems()) {
-            Producto producto = item.getProducto();
-
-            if (producto.getStock() < item.getCantidad())
-                throw new RuntimeException("Stock insuficiente para " + producto.getNombre());
-
-            DetallePedido detalle = new DetallePedido();
-            detalle.setPedido(pedido);
-            detalle.setProducto(item.getProducto());
-            detalle.setCantidad(item.getCantidad());
-            detalle.setPrecioUnitario(item.getProducto().getPrecio().doubleValue());
-
-            pedido.getDetalles().add(detalle);
-            producto.setStock(producto.getStock() - item.getCantidad());
-
-            if (producto.getStock() <= 0)
-                producto.setActivo(false);
-
-            productoRepository.save(producto);
-
-            total += detalle.getCantidad() * detalle.getPrecioUnitario();
+                return carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
+                                .orElseGet(() -> {
+                                        Carrito carrito = new Carrito();
+                                        carrito.setUsuario(usuario);
+                                        carrito.setEstado(EstadoCarrito.ACTIVO);
+                                        carrito.setItems(new ArrayList<>());
+                                        return carritoRepository.save(carrito);
+                                });
         }
 
-        pedido.setTotal(total < 50 ? total + 2 : total);
-        carrito.setEstado(EstadoCarrito.CONFIRMADO);
+        @Transactional
+        public Carrito añadirProducto(String correoUsuario, Long productoId, int cantidad) {
+                if (cantidad <= 0)
+                        throw new IllegalArgumentException("La cantidad debe ser mayor que 0");
 
-        return pedidoRepository.save(pedido);
-    }
+                Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    @Transactional
-    public Carrito sumarCantidadItem(Long itemId) {
-        CarritoItem item = carritoItemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Item no encontrado"));
+                Carrito carrito = carritoRepository
+                                .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
+                                .orElseGet(() -> {
+                                        Carrito nuevo = new Carrito();
+                                        nuevo.setUsuario(usuario);
+                                        nuevo.setEstado(EstadoCarrito.ACTIVO);
+                                        return carritoRepository.save(nuevo);
+                                });
 
-        item.setCantidad(
-                item.getCantidad() + 1);
+                Producto producto = productoRepository.findById(productoId)
+                                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        carritoItemRepository.save(item);
+                CarritoItem item = carritoItemRepository
+                                .findByCarritoAndProducto(carrito, producto)
+                                .orElse(null);
 
-        return item.getCarrito();
-    }
+                if (item != null) {
+                        item.setCantidad(item.getCantidad() + cantidad);
+                } else {
+                        item = new CarritoItem();
+                        item.setCarrito(carrito);
+                        item.setProducto(producto);
+                        item.setCantidad(cantidad);
+                        item.setPrecioUnitario(producto.getPrecio().doubleValue());
+                        carrito.getItems().add(item);
+                }
 
-    @Transactional
-    public Carrito restarCantidadItem(Long itemId) {
-        CarritoItem item = carritoItemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Item no encontrado"));
+                carritoItemRepository.save(item);
 
-        int nuevaCantidad = item.getCantidad() - 1;
-
-        if (nuevaCantidad <= 0) {
-            Carrito carrito = item.getCarrito();
-            carrito.getItems().remove(item);
-            carritoItemRepository.delete(item);
-            return carrito;
-        }
-        item.setCantidad(nuevaCantidad);
-        carritoItemRepository.save(item);
-
-        return item.getCarrito();
-    }
-
-    @Transactional
-    public Carrito eliminarItem(Long itemId) {
-        CarritoItem item = carritoItemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Item no encontrado"));
-
-        Carrito carrito = item.getCarrito();
-        carrito.getItems().remove(item);
-        carritoItemRepository.delete(item);
-        return carrito;
-    }
-
-    @Transactional
-    public String crearSesionStripe(String correoUsuario, ConfirmarPedidoDTO dto) throws Exception {
-        Usuario usuario = usuarioRepository
-                .findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException(
-                        "Usuario no encontrado"));
-
-        Carrito carrito = carritoRepository
-                .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
-                .orElseThrow(() -> new RuntimeException(
-                        "No existe un carrito activo"));
-
-        if (carrito.getItems().isEmpty())
-            throw new IllegalStateException("Carrito vacío");
-
-        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
-
-        double total = carrito
-                .getItems()
-                .stream()
-                .mapToDouble(
-                        carritoItem -> carritoItem.getCantidad() * carritoItem.getProducto().getPrecio().doubleValue())
-                .sum();
-
-        for (CarritoItem item : carrito.getItems()) {
-            Producto producto = item.getProducto();
-            long precio = Math.round(producto.getPrecio().doubleValue() * 100);
-
-            SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem
-                    .builder()
-                    .setQuantity((long) item.getCantidad())
-                    .setPriceData(SessionCreateParams.LineItem.PriceData
-                            .builder()
-                            .setCurrency("eur")
-                            .setUnitAmount(precio)
-                            .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
-                                    .builder()
-                                    .setName(producto.getNombre())
-                                    .build())
-                            .build())
-                    .build();
-            lineItems.add(lineItem);
+                return carrito;
         }
 
-        if (total < 50) {
-            SessionCreateParams.LineItem envioItem = SessionCreateParams.LineItem
-                    .builder()
-                    .setQuantity(1L)
-                    .setPriceData(SessionCreateParams.LineItem.PriceData
-                            .builder()
-                            .setCurrency("eur")
-                            .setUnitAmount(200L)
-                            .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
-                                    .builder()
-                                    .setName("Gastos de envío")
-                                    .build())
-                            .build())
-                    .build();
-            lineItems.add(envioItem);
+        @Transactional
+        public Pedido confirmarCarrito(String correoUsuario, ConfirmarPedidoDTO dto) {
+                Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+                Carrito carrito = carritoRepository.findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
+                                .orElseThrow(() -> new RuntimeException("No existe un carrito activo"));
+
+                if (carrito.getItems().isEmpty())
+                        throw new IllegalStateException("El carrito se encuentra vacío actualmente");
+
+                Pedido pedido = new Pedido();
+                pedido.setCliente(usuario);
+                pedido.setFecha(LocalDate.now());
+                pedido.setEstado(Estado.PENDIENTE);
+                pedido.setMetodoPago(dto.getMetodoPago());
+                pedido.setEspecificacionesEntrega(dto.getEspecificacionesEntrega());
+                double total = 0;
+
+                for (CarritoItem item : carrito.getItems()) {
+                        Producto producto = item.getProducto();
+
+                        if (producto.getStock() < item.getCantidad())
+                                throw new RuntimeException("Stock insuficiente para " + producto.getNombre());
+
+                        DetallePedido detalle = new DetallePedido();
+                        detalle.setPedido(pedido);
+                        detalle.setProducto(item.getProducto());
+                        detalle.setCantidad(item.getCantidad());
+                        detalle.setPrecioUnitario(item.getProducto().getPrecio().doubleValue());
+
+                        pedido.getDetalles().add(detalle);
+                        producto.setStock(producto.getStock() - item.getCantidad());
+
+                        if (producto.getStock() <= 0)
+                                producto.setActivo(false);
+
+                        productoRepository.save(producto);
+
+                        total += detalle.getCantidad() * detalle.getPrecioUnitario();
+                }
+
+                pedido.setTotal(total < 50 ? total + 2 : total);
+                carrito.setEstado(EstadoCarrito.CONFIRMADO);
+
+                return pedidoRepository.save(pedido);
         }
 
-        SessionCreateParams params = SessionCreateParams
-                .builder()
-                .setMode(SessionCreateParams.Mode.PAYMENT)
-                // .setSuccessUrl("http://localhost:4200/pedidos")
-                // .setCancelUrl("http://localhost:4200/carrito")
-                .setSuccessUrl("https://frontend-coviran-avenida-portugal.vercel.app/pedidos")
-                .setCancelUrl("https://frontend-coviran-avenida-portugal.vercel.app/carrito")
-                .addAllLineItem(lineItems)
-                .build();
+        @Transactional
+        public Carrito sumarCantidadItem(Long itemId) {
+                CarritoItem item = carritoItemRepository
+                                .findById(itemId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Item no encontrado"));
 
-        Session session = Session.create(params);
+                item.setCantidad(
+                                item.getCantidad() + 1);
 
-        return session.getUrl();
-    }
+                carritoItemRepository.save(item);
+
+                return item.getCarrito();
+        }
+
+        @Transactional
+        public Carrito restarCantidadItem(Long itemId) {
+                CarritoItem item = carritoItemRepository
+                                .findById(itemId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Item no encontrado"));
+
+                int nuevaCantidad = item.getCantidad() - 1;
+
+                if (nuevaCantidad <= 0) {
+                        Carrito carrito = item.getCarrito();
+                        carrito.getItems().remove(item);
+                        carritoItemRepository.delete(item);
+                        return carrito;
+                }
+                item.setCantidad(nuevaCantidad);
+                carritoItemRepository.save(item);
+
+                return item.getCarrito();
+        }
+
+        @Transactional
+        public Carrito eliminarItem(Long itemId) {
+                CarritoItem item = carritoItemRepository
+                                .findById(itemId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Item no encontrado"));
+
+                Carrito carrito = item.getCarrito();
+                carrito.getItems().remove(item);
+                carritoItemRepository.delete(item);
+                return carrito;
+        }
+
+        @Transactional
+        public String crearSesionStripe(String correoUsuario, ConfirmarPedidoDTO dto) throws Exception {
+                Usuario usuario = usuarioRepository
+                                .findByCorreo(correoUsuario)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Usuario no encontrado"));
+
+                Carrito carrito = carritoRepository
+                                .findByUsuarioAndEstado(usuario, EstadoCarrito.ACTIVO)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "No existe un carrito activo"));
+
+                if (carrito.getItems().isEmpty())
+                        throw new IllegalStateException("Carrito vacío");
+
+                List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
+
+                double total = carrito
+                                .getItems()
+                                .stream()
+                                .mapToDouble(
+                                                carritoItem -> carritoItem.getCantidad()
+                                                                * carritoItem.getProducto().getPrecio().doubleValue())
+                                .sum();
+
+                for (CarritoItem item : carrito.getItems()) {
+                        Producto producto = item.getProducto();
+                        long precio = Math.round(producto.getPrecio().doubleValue() * 100);
+
+                        SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem
+                                        .builder()
+                                        .setQuantity((long) item.getCantidad())
+                                        .setPriceData(SessionCreateParams.LineItem.PriceData
+                                                        .builder()
+                                                        .setCurrency("eur")
+                                                        .setUnitAmount(precio)
+                                                        .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
+                                                                        .builder()
+                                                                        .setName(producto.getNombre())
+                                                                        .build())
+                                                        .build())
+                                        .build();
+                        lineItems.add(lineItem);
+                }
+
+                if (total < 50) {
+                        SessionCreateParams.LineItem envioItem = SessionCreateParams.LineItem
+                                        .builder()
+                                        .setQuantity(1L)
+                                        .setPriceData(SessionCreateParams.LineItem.PriceData
+                                                        .builder()
+                                                        .setCurrency("eur")
+                                                        .setUnitAmount(200L)
+                                                        .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
+                                                                        .builder()
+                                                                        .setName("Gastos de envío")
+                                                                        .build())
+                                                        .build())
+                                        .build();
+                        lineItems.add(envioItem);
+                }
+
+                SessionCreateParams params = SessionCreateParams
+                                .builder()
+                                .setMode(SessionCreateParams.Mode.PAYMENT)
+                                // .setSuccessUrl("http://localhost:4200/pedidos")
+                                // .setCancelUrl("http://localhost:4200/carrito")
+                                .setSuccessUrl("https://frontend-coviran-avenida-portugal.vercel.app/pedidos")
+                                .setCancelUrl("https://frontend-coviran-avenida-portugal.vercel.app/carrito")
+                                .addAllLineItem(lineItems)
+                                .build();
+
+                Session session = Session.create(params);
+
+                return session.getUrl();
+        }
 }
