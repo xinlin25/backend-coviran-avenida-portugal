@@ -77,7 +77,8 @@ public class AuthController {
 
                     passwordResetTokenRepository.save(resetToken);
 
-                    String url = "http://localhost:4200/restablecer-password?token=" + token;
+                    String url = "https://frontend-coviran-avenida-portugal.vercel.app/restablecer-password?token="
+                            + token;
 
                     emailService.enviarCorreo(
                             usuario.getCorreo(),
