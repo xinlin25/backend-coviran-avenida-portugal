@@ -81,13 +81,13 @@ public class AuthController {
 
                     emailService.enviarCorreo(
                             usuario.getCorreo(),
-                            "Recuperación de contraseña",
-                            "Pulsa en este enlace para restablecer tu contraseña:\n\n"
-                                    + url);
+                            "Restablecer contraseña Coviran Avenida Portugal",
+                            "Pulse en este enlace para restablecer la contraseña:\n\n" + url
+                                    + "\n\nSi usted no ha solicitado el restablecimiento de la contraseña, puede ignorar este mensaje con seguridad.");
                 });
 
         return ResponseEntity.ok(
-                "Si el correo existe, se enviará un enlace de recuperación");
+                "Si el correo esta registrado, se enviará un enlace de recuperación");
     }
 
     @PostMapping("/restablecer-password")
