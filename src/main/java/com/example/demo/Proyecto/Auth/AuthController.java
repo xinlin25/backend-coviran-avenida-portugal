@@ -68,6 +68,7 @@ public class AuthController {
     public ResponseEntity<String> recuperarPassword(@RequestBody RecuperarPasswordRequest request) {
         usuarioService.buscarPorCorreo(request.getCorreo())
                 .ifPresent(usuario -> {
+                    passwordResetTokenRepository.findByUsuario(usuario).ifPresent(passwordResetTokenRepository::delete);
 
                     String token = UUID.randomUUID().toString();
 
