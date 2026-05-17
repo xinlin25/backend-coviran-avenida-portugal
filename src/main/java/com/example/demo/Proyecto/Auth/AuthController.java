@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.demo.Proyecto.DTO.RestablecerPasswordRequest;
 import com.example.demo.Proyecto.Enum.Rol;
 import com.example.demo.Proyecto.Model.Usuario;
 import com.example.demo.Proyecto.Security.JwtUtils;
@@ -86,5 +87,27 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 "Si el correo existe, se enviará un enlace de recuperación");
+    }
+
+    @PostMapping("/restablecer-password")
+    public ResponseEntity<String> restablecerPassword(@RequestBody RestablecerPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository
+                .findByToken(request.getToken())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Token inválido"));
+
+        if (resetToken.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+            passwordResetTokenRepository.delete(resetToken);
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expirado");
+        }
+
+        Usuario usuario = resetToken.getUsuario();
+        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuarioService.guardarUsuario(usuario);
+        passwordResetTokenRepository.delete(resetToken);
+
+        return ResponseEntity.ok("Contraseña actualizada correctamente");
     }
 }
