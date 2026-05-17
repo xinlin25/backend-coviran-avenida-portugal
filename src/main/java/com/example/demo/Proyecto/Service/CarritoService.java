@@ -45,7 +45,7 @@ public class CarritoService {
                 this.pedidoRepository = pedidoRepository;
         }
 
-        @Transactional(readOnly = true)
+        @Transactional
         public Carrito obtenerCarritoActivo(String correoUsuario) {
                 Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
                                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
