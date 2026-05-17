@@ -75,6 +75,22 @@ public class PedidoController {
         return ResponseEntity.ok(actualizado);
     }
 
+    @PutMapping("/{id}/cancelar")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<Pedido> cancelarPedido(@PathVariable Long id) {
+
+        Pedido pedido = pedidoService.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        if (pedido.getEstado() != Estado.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden cancelar pedidos pendientes");
+        }
+
+        Pedido actualizado = pedidoService.cambiarEstado(id, Estado.CANCELADO);
+
+        return ResponseEntity.ok(actualizado);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> verPedido(@PathVariable Long id, @AuthenticationPrincipal Usuario usuario) {
         Pedido pedido = pedidoService.buscarPorId(id).orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
