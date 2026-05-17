@@ -25,14 +25,14 @@ public class UsuarioService {
     }
 
     public Usuario guardarUsuario(Usuario u) {
-        u.setPassword(passwordEncoder.encode(u.getPassword()));
+        u.setPassword(u.getPassword());
         return usuarioRepository.save(u);
     }
 
     public Optional<Usuario> buscarPorCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo);
-    } 
-    
+    }
+
     public Optional<Usuario> buscarPorTlf(String tlf) {
         return usuarioRepository.findByTlf(tlf);
     }
@@ -56,15 +56,15 @@ public class UsuarioService {
     @Transactional
     public Usuario actualizarPerfil(String correo, ActualizarPerfilDTO datos) {
         Usuario usuario = usuarioRepository.findByCorreo(correo)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (datos.nombreCompleto() != null) 
+        if (datos.nombreCompleto() != null)
             usuario.setNombreCompleto(datos.nombreCompleto());
 
-        if (datos.tlf() != null) 
+        if (datos.tlf() != null)
             usuario.setTlf(datos.tlf());
 
-        if (datos.direccion() != null) 
+        if (datos.direccion() != null)
             usuario.setDireccion(datos.direccion());
 
         return usuarioRepository.save(usuario);
@@ -73,7 +73,7 @@ public class UsuarioService {
     @Transactional
     public Usuario actualizarUsuario(Long id, ActualizarUsuarioDTO u) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setNombreCompleto(u.nombreCompleto());
         usuario.setTlf(u.tlf());
@@ -86,7 +86,8 @@ public class UsuarioService {
 
     @Transactional
     public Usuario cambiarRol(Long id, Rol rol) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setRol(rol);
         return usuario;
@@ -94,7 +95,8 @@ public class UsuarioService {
 
     @Transactional
     public void desactivarUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setEnabled(false);
     }
