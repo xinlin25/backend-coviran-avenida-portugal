@@ -105,7 +105,7 @@ public class AuthController {
         }
 
         Usuario usuario = resetToken.getUsuario();
-        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setPassword(request.getPassword());
         usuarioService.guardarUsuario(usuario);
         passwordResetTokenRepository.delete(resetToken);
 
