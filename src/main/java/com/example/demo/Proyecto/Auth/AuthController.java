@@ -29,14 +29,17 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final EmailService emailService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final AuthService authService;
 
     public AuthController(UsuarioService usuarioService, PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
-            EmailService emailService, PasswordResetTokenRepository passwordResetTokenRepository) {
+            EmailService emailService, PasswordResetTokenRepository passwordResetTokenRepository,
+            AuthService authService) {
         this.usuarioService = usuarioService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.emailService = emailService;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.authService = authService;
     }
 
     @PostMapping("/login")
@@ -50,8 +53,25 @@ public class AuthController {
         }
 
         String token = jwtUtils.generarToken(usuario);
+        RefreshToken refreshToken = authService.crearRefreshToken(usuario);
 
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.ok(new LoginResponse(token, refreshToken.getToken()));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        RefreshToken refreshToken = authService.validarRefreshToken(request.getRefreshToken());
+        String token = jwtUtils.generarToken(refreshToken.getUsuario());
+        RefreshToken nuevoRefreshToken = authService.crearRefreshToken(refreshToken.getUsuario());
+
+        return ResponseEntity.ok(new LoginResponse(token, nuevoRefreshToken.getToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+        authService.borrarRefreshToken(request.getRefreshToken());
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/register")
