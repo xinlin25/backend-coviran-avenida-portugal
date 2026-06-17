@@ -1,6 +1,8 @@
 package com.example.demo.Proyecto.Controller;
 
 import java.math.BigDecimal;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +49,7 @@ public class ProductoController {
             @RequestParam int stock,
             @RequestParam Long categoriaId,
             @RequestParam(required = false) Boolean activo,
+            @RequestParam(required = false) MultipartFile[] imagenes,
             @RequestParam(required = false) MultipartFile imagen,
             @RequestParam(required = false) Boolean enOferta,
             @RequestParam(required = false) BigDecimal precioOferta,
@@ -72,10 +75,7 @@ public class ProductoController {
             producto.setActivo(activo != null ? activo : true);
         }
         try {
-            if (imagen != null && !imagen.isEmpty()) {
-                String imageUrl = cloudinaryService.subirImagen(imagen);
-                producto.setImagenUrl(imageUrl);
-            }
+            producto.setImagenUrl(subirImagenes(imagenes, imagen));
 
             return ResponseEntity.ok(productoService.guardarProducto(producto));
         } catch (Exception e) {
@@ -151,6 +151,7 @@ public class ProductoController {
             @RequestParam(required = false) Boolean enOferta,
             @RequestParam(required = false) BigDecimal precioOferta,
             @RequestParam(required = false) Boolean destacado,
+            @RequestParam(required = false) MultipartFile[] imagenes,
             @RequestParam(required = false) MultipartFile imagen) {
         try {
             Producto producto = productoService.buscarPorId(id).orElseThrow();
@@ -171,9 +172,9 @@ public class ProductoController {
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
             producto.setCategoria(categoria);
 
-            if (imagen != null && !imagen.isEmpty()) {
-                String imageUrl = cloudinaryService.subirImagen(imagen);
-                producto.setImagenUrl(imageUrl);
+            List<String> imagenesSubidas = subirImagenes(imagenes, imagen);
+            if (!imagenesSubidas.isEmpty()) {
+                producto.setImagenUrl(imagenesSubidas);
             }
 
             return ResponseEntity.ok(productoService.guardarProducto(producto));
@@ -188,5 +189,23 @@ public class ProductoController {
     public ResponseEntity<Void> desactivarProducto(@PathVariable Long id) {
         productoService.desactivarProducto(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private List<String> subirImagenes(MultipartFile[] imagenes, MultipartFile imagen) throws IOException {
+        List<String> urls = new ArrayList<>();
+
+        if (imagenes != null) {
+            for (MultipartFile archivo : imagenes) {
+                if (archivo != null && !archivo.isEmpty()) {
+                    urls.add(cloudinaryService.subirImagen(archivo));
+                }
+            }
+        }
+
+        if (urls.isEmpty() && imagen != null && !imagen.isEmpty()) {
+            urls.add(cloudinaryService.subirImagen(imagen));
+        }
+
+        return urls;
     }
 }

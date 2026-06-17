@@ -1,10 +1,13 @@
 package com.example.demo.Proyecto.Model;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,8 +46,9 @@ public class Producto {
     @Size(min = 2, max = 250)
     private String descripcion;
 
-    @Column(name = "imagen_url")
-    private String imagenUrl;
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "imagen_url", columnDefinition = "TEXT")
+    private List<String> imagenUrl = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean enOferta = false;
